@@ -2,6 +2,7 @@ package net.buj.loader;
 
 import net.buj.rml.Environment;
 import net.buj.rml.annotations.Nullable;
+import net.minecraft.client.MinecraftApplet;
 import org.lwjgl.Sys;
 
 import java.applet.Applet;
@@ -17,13 +18,13 @@ import java.net.URLClassLoader;
 import java.nio.file.Path;
 
 public class RosepadMainThread extends Thread {
-    private @Nullable Applet applet;
+    private @Nullable MinecraftApplet applet;
     private RosepadLoader loader;
 
     public RosepadMainThread(@Nullable Applet applet, RosepadLoader loader) {
         super("Rosepad main thread");
 
-        this.applet = applet;
+        this.applet = (MinecraftApplet) applet;
         this.loader = loader;
     }
 
@@ -80,7 +81,7 @@ public class RosepadMainThread extends Thread {
             if (applet != null && this.loader.environment == Environment.CLIENT) { // Use applet launcher if available
                 Class<?> $MinecraftApplet = loader.loadClass("net.minecraft.client.MinecraftApplet");
                 Applet mcApplet = (Applet) $MinecraftApplet.newInstance();
-                applet.add(mcApplet, "Center");
+                applet.wrap(mcApplet);
                 mcApplet.resize(applet.getWidth(), applet.getHeight());
                 mcApplet.setStub(new PassthroughStub(applet, mcApplet));
                 mcApplet.init();
