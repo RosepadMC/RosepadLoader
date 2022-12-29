@@ -31,8 +31,12 @@ public class GameJar {
     }
 
     private InputStream getResource(String str) {
-        return Objects.requireNonNull(
-            getClass().getClassLoader().getResourceAsStream(str));
+        try {
+            return Objects.requireNonNull(
+                getClass().getClassLoader().getResourceAsStream(str));
+        } catch (NullPointerException e) {
+            throw new RuntimeException("Failed to load resource " + str, e);
+        }
     }
 
     private byte[] readAllBytes(InputStream in) throws IOException {
@@ -48,34 +52,9 @@ public class GameJar {
         return buffer.toByteArray();
     }
 
-    protected void repairZipFile(String file) throws IOException { // Stolen from stackoverflow
-        File repairZipFile = new File(file+".repair");
-        ZipFile zipFile = new ZipFile(file);
-        Enumeration<? extends ZipEntry> zipFileEntries = zipFile.entries();
-        InputStream zis;
-        ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(repairZipFile.toPath()));
-        byte[] b = new byte[1024];
-        while(zipFileEntries.hasMoreElements()){
-            ZipEntry zipEntry = zipFileEntries.nextElement();
-            zos.putNextEntry(zipEntry);
-            zis = zipFile.getInputStream(zipEntry);
-            int n = zis.read(b);
-            while(n>=0) {
-                zos.write(b, 0, n);
-                n = zis.read(b);
-            }
-            zis.close();
-            zos.closeEntry();
-        }
-        zipFile.close();
-        zos.flush();
-        zos.close();
-        Files.move(repairZipFile.toPath(), (new File(file)).toPath(), StandardCopyOption.REPLACE_EXISTING);
-    }
-
     public void fetch() throws IOException, URISyntaxException {
         Path orig = home.resolve(".orig-mc.jar");
-        Path patched = home.resolve(".minecraft-patched.jar");
+        //Path patched = home.resolve(".minecraft-patched.jar");
         Path deobfuscated = home.resolve("minecraft.jar");
         Path hashPath = home.resolve(".hash");
 
