@@ -55,6 +55,18 @@ java {
     }
 }
 
+task addDiffFiles(type: Copy, dependsOn: shadowJar) {
+    from(
+        projectDir.toPath().resolve("src/main/java/resources/client.diff"),
+        projectDir.toPath().resolve("src/main/java/resources/server.diff")
+    )
+    into(zipTree(shadowJar.archiveFile.get().asFile))
+}
+
+processResources {
+    dependsOn "createDiffs"
+}
+
 task client(type: Jar, dependsOn: shadowJar) {
     archiveName = "clientLoader.jar"
     exclude "server*"
@@ -73,6 +85,10 @@ task server(type: Jar, dependsOn: shadowJar) {
 task pack() {
     dependsOn "client"
     dependsOn "server"
+}
+
+processResources {
+    dependsOn "createDiffs"
 }
 
 shadowJar {
