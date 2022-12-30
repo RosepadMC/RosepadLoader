@@ -9,14 +9,6 @@ public class Minecraft implements Runnable {
 
     private static File minecraftDir = null;
 
-    private enum EnumOS {
-        LINUX,
-        SOLARIS,
-        WINDOWS,
-        MACOS,
-        UNKNOWN;
-    }
-
     public static File getMinecraftDir() {
         if (minecraftDir != null) return minecraftDir;
         return (minecraftDir = new File(".minecraft")); // .minecraft > ~/.minecraft

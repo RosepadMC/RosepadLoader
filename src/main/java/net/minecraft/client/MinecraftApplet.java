@@ -26,23 +26,7 @@ public class MinecraftApplet extends Applet {
 
     public void wrap(Applet applet) {
         wrapped = applet;
-        add(wrapped, "Center");
-    }
-
-    @Override
-    public void resize(int width, int height) {
-        System.out.println(width + "x" + height);
-        super.resize(width, height);
-        if (wrapped != null)
-            wrapped.resize(width, height);
-    }
-
-    @Override
-    public void resize(Dimension d) {
-        System.out.println(d);
-        super.resize(d);
-        if (wrapped != null)
-            wrapped.resize(d);
+        add(wrapped);
     }
 
     public void init() {}

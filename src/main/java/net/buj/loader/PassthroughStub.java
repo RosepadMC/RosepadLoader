@@ -1,5 +1,8 @@
 package net.buj.loader;
 
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.Display;
+
 import java.applet.Applet;
 import java.applet.AppletContext;
 import java.applet.AppletStub;
@@ -42,7 +45,6 @@ public class PassthroughStub implements AppletStub {
     @Override
     public void appletResize(int width, int height) {
         System.out.println("stub " + width + "x" + height);
-        source.resize(width, height);
         target.resize(width, height);
     }
 }
