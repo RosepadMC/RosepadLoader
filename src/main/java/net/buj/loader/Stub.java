@@ -8,13 +8,16 @@ import java.applet.AppletContext;
 import java.applet.AppletStub;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Stub implements AppletStub {
     private String username;
     private Applet applet;
+    private Map<String, String> params = new HashMap<>();
 
-    public Stub(String username, Applet applet) {
-        this.username = username;
+    public Stub(Applet applet) {
+        this.applet = applet;
     }
 
     @Override
@@ -42,7 +45,11 @@ public class Stub implements AppletStub {
 
     @Override
     public String getParameter(String name) {
-        return name.equals("username") ? username : null;
+        return params.get(name);
+    }
+
+    public void setParameter(String name, String param) {
+        params.put(name, param);
     }
 
     @Override

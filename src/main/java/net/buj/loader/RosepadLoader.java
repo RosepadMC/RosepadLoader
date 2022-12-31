@@ -5,7 +5,8 @@ import net.minecraft.client.MinecraftApplet;
 
 import java.awt.*;
 import java.nio.file.Path;
-import java.util.Objects;
+import java.util.*;
+import java.util.List;
 
 public class RosepadLoader {
     private static boolean dirtyOneMain = false;
@@ -25,6 +26,13 @@ public class RosepadLoader {
         this.applet = applet;
     }
 
+    private String arg(String[] args, int i) {
+        if (i < 0 || args.length <= i) {
+            return null;
+        }
+        return args[i];
+    }
+
     public void main(Environment env, String[] args, Path home) {
         environment = env;
         this.args = args;
@@ -38,7 +46,10 @@ public class RosepadLoader {
         if (applet == null) {
             Frame frame = new LauncherWindow();
             frame.add((applet = new MinecraftApplet()));
-            applet.setStub(new Stub(Objects.toString(args[0], "Player"), applet));
+            Stub stub = new Stub(applet);
+            stub.setParameter("username", Objects.toString(arg(args, 0), "Player"));
+            stub.setParameter("sessionid", Objects.toString(arg(args, 1), ""));
+            applet.setStub(new Stub(applet));
             frame.setVisible(true);
         }
 

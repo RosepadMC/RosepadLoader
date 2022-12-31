@@ -1,14 +1,11 @@
 package net.buj.loader;
 
 import net.buj.rml.Environment;
-import net.fabricmc.tinyremapper.*;
 
 import java.io.*;
 import java.net.*;
 import java.nio.file.*;
 import java.util.*;
-import java.util.jar.*;
-import java.util.zip.ZipOutputStream;
 
 public class GameJar {
 
