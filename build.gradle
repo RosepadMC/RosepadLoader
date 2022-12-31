@@ -99,14 +99,56 @@ tasks.register("createDiffs") {
     dependsOn rootProject.obfuscate
 
     doLast {
-        byte[] rosepadClient = Files.readAllBytes(rootProject.rootDir.toPath().resolve("build/RosepadClient.jar"))
+        byte[] rosepadClient = Files.readAllBytes(rootProject.rootDir.toPath().resolve("client/build/libs/client-1.1-SNAPSHOT-all.jar"))
         byte[] vanillaClient = Files.readAllBytes(rootProject.rootDir.toPath().resolve("jars/lilypad_client_s.jar"))
         byte[] diffClient = diff(vanillaClient, rosepadClient);
         Files.write(project.projectDir.toPath().resolve("src/main/resources/client.diff"), diffClient);
 
-        byte[] rosepadServer = Files.readAllBytes(rootProject.rootDir.toPath().resolve("build/RosepadServer.jar"))
+        byte[] rosepadServer = Files.readAllBytes(rootProject.rootDir.toPath().resolve("server/build/libs/server-1.1-SNAPSHOT-all.jar"))
         byte[] vanillaServer = Files.readAllBytes(rootProject.rootDir.toPath().resolve("jars/lilypad_server_s.jar"))
         byte[] diffServer = diff(vanillaServer, rosepadServer);
         Files.write(project.projectDir.toPath().resolve("src/main/resources/server.diff"), diffServer);
     }
+}
+
+
+FileCollection getLilypadClasspath(FileCollection originalCollection, String libraryFolder, String mainFile) {
+    File libFolder = new File(libraryFolder)
+
+    ArrayList<File> finalList = libFolder.listFiles()
+
+    // Remove files from libFolder that original already has
+    for (File libraryFile : libFolder.listFiles()) {
+        for (File classpathFile in originalCollection.getFiles()) {
+            if (!finalList.contains(classpathFile)) {
+                finalList.add(classpathFile) // for src/main/java and src/main/resources
+            }
+        }
+    }
+
+    finalList.add(mainFile as File)
+
+    return files(finalList)
+}
+
+static List<String> getRunJVMArgs(String allocatedMemory, java.nio.file.Path libDir) {
+    List<String> jvmArgs = new ArrayList<String>()
+    jvmArgs.add("-Xmx" + allocatedMemory)
+    jvmArgs.add("-Xms" + allocatedMemory)
+    jvmArgs.add("-Djava.util.Arrays.useLegacyMergeSort=true")
+    jvmArgs.add("-Djava.library.path=" + libDir)
+    return jvmArgs
+}
+
+task runClient(type: JavaExec, dependsOn: client) {
+    mainClass = "net.minecraft.client.Minecraft"
+    argsString = "Player"
+    classpath = getLilypadClasspath(
+        sourceSets.main.runtimeClasspath,
+        rootProject.projectDir.toPath().resolve("libs").toString(),
+        shadowJar.destinationDirectory.file("clientLoader.jar").toString()
+    )
+    //environment("HOME", "${projectDir}/run")
+    //workingDir("${projectDir}/run")
+    jvmArgs = getRunJVMArgs("1024M", rootProject.projectDir.toPath().resolve("libs/natives"))
 }

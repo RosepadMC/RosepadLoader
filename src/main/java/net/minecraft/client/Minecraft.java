@@ -11,7 +11,12 @@ public class Minecraft implements Runnable {
 
     public static File getMinecraftDir() {
         if (minecraftDir != null) return minecraftDir;
-        return (minecraftDir = new File(".minecraft")); // .minecraft > ~/.minecraft
+        return (minecraftDir = new File(".")
+            .getAbsoluteFile()
+            .getName()
+            .equals(".minecraft")
+            ? new File(".")
+            : new File(".minecraft")); // .minecraft > ~/.minecraft
     }
 
     public static void main(String[] args) {

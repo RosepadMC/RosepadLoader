@@ -44,3 +44,8 @@ bin/
 ### diffs ###
 client.diff
 server.diff
+
+.minecraft
+resources
+saves
+run

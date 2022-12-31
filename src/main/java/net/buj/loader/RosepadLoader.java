@@ -3,10 +3,11 @@ package net.buj.loader;
 import net.buj.rml.Environment;
 import net.minecraft.client.MinecraftApplet;
 
+import java.awt.*;
 import java.nio.file.Path;
+import java.util.Objects;
 
 public class RosepadLoader {
-
     private static boolean dirtyOneMain = false;
     private MinecraftApplet applet = null;
 
@@ -29,14 +30,22 @@ public class RosepadLoader {
         this.args = args;
         this.home = home;
 
-        System.setSecurityManager(null); // Who needs security?
-
         if (!dirtyOneMain) {
             dirtyOneMain = true;
         }
         else throw new RuntimeException("Calling main multiple times");
 
-        Thread thread = new RosepadMainThread(applet, this);
+        if (applet == null) {
+            Frame frame = new LauncherWindow();
+            frame.add((applet = new MinecraftApplet()));
+            applet.setStub(new Stub(Objects.toString(args[0], "Player"), applet));
+            frame.setVisible(true);
+        }
+
+        RosepadLoadingWindow loadingWindow = new RosepadLoadingWindow(applet);
+        new Thread(loadingWindow, "Rosepad loading window thread").start();
+
+        Thread thread = new RosepadMainThread(loadingWindow, this);
         thread.start();
     }
 }

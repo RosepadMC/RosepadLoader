@@ -23,19 +23,19 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class RosepadMainThread extends Thread {
-    private @Nullable MinecraftApplet applet;
+    private @NotNull RosepadLoadingWindow window;
     private RosepadLoader loader;
-    private Timer resizeTimer;
 
-    public RosepadMainThread(@Nullable Applet applet, RosepadLoader loader) {
+    public RosepadMainThread(@NotNull RosepadLoadingWindow window, RosepadLoader loader) {
         super("Rosepad main thread");
 
-        this.applet = (MinecraftApplet) applet;
+        this.window = window;
         this.loader = loader;
     }
 
     private GameJar initJar(Environment env, Path versionHome) throws IOException, URISyntaxException {
         GameJar jar = new GameJar(env, versionHome);
+        jar.window = window;
 
         jar.fetch();
 
@@ -48,16 +48,13 @@ public class RosepadMainThread extends Thread {
         try {
             jar = initJar(loader.environment, loader.home.resolve("versions/" + R.VERSION_NAME));
         } catch (IOException | URISyntaxException e) {
-            applet.stop();
-            applet.destroy();
-            throw new RuntimeException(e);
+            window.crash(e);
+            return;
         }
 
         // TODO: Mixins
-        if (applet != null) {
-            applet.stop();
-            applet.destroy();
-        }
+
+        window.setTask("Starting game...");
 
         URLClassLoader loader;
         try {
@@ -84,11 +81,13 @@ public class RosepadMainThread extends Thread {
                 break;
             }
 
-            if (applet != null && this.loader.environment == Environment.CLIENT) { // Replace the applet
+            if (window.applet != null && this.loader.environment == Environment.CLIENT) { // Replace the applet
+                window.setTask("Setting up applet...");
+
                 // Do all the work that applet does, but with reflection!
-                boolean fullscreen = "true".equalsIgnoreCase(applet.getParameter("fullscreen"));
-                @NotNull String username = Objects.toString(applet.getParameter("username"), "Player");
-                @NotNull String sessionID = Objects.toString(applet.getParameter("sessionid"), "");
+                boolean fullscreen = "true".equalsIgnoreCase(window.getParameter("fullscreen"));
+                @NotNull String username = window.getParameter("username", "Player");
+                @NotNull String sessionID = window.getParameter("sessionid", "");
 
                 Canvas canvas; // Useless type definition!
                 {
@@ -100,7 +99,10 @@ public class RosepadMainThread extends Thread {
                 {
                     Class<?> klass2 = loader.loadClass("net.minecraft.src.MinecraftAppletImpl");
                     Constructor<?> constructor = klass2.getConstructor(Applet.class, Component.class, Canvas.class, Applet.class, int.class, int.class, boolean.class);
-                    minecraft = (Runnable) constructor.newInstance(applet, applet, canvas, applet, applet.getWidth(), applet.getHeight(), fullscreen);
+                    minecraft = (Runnable) constructor.newInstance(
+                        window.applet, window.applet, canvas, window.applet,
+                        window.applet.getWidth(), window.applet.getHeight(),
+                        fullscreen);
                 }
                 canvas.getClass().getField("mc").set(canvas, minecraft);
                 {
@@ -111,52 +113,29 @@ public class RosepadMainThread extends Thread {
                 // Don't care about mppass thing
                 // Don't care about loadmap either
 
-                if (applet.getParameter("server") != null && applet.getParameter("port") != null) {
+                if (window.getParameter("server") != null && window.getParameter("port") != null) {
                     minecraft.getClass().getMethod("setServer", String.class, String.class)
-                        .invoke(minecraft, applet.getParameter("server"), applet.getParameter("port"));
+                        .invoke(minecraft, window.getParameter("server"), window.getParameter("port"));
                 }
 
                 minecraft.getClass().getField("appletMode").set(minecraft, true);
 
+                Applet applet = window.release();
                 // Finally starting MC
                 applet.setLayout(new BorderLayout());
                 applet.add(canvas, "Center");
                 canvas.setFocusable(true);
                 applet.validate();
             }
-          //else if (this.loader.environment == Environment.CLIENT) { // Use applet launcher if available
-          //    Class<?> $MinecraftApplet = loader.loadClass("net.minecraft.client.MinecraftApplet");
-          //    Applet mcApplet = (Applet) $MinecraftApplet.newInstance();
-          //    applet.wrap(mcApplet);
-          //    mcApplet.resize(applet.getWidth(), applet.getHeight());
-          //    mcApplet.setStub(new PassthroughStub(applet, mcApplet));
-          //    mcApplet.init();
-          //    mcApplet.start();
-
-          //    {
-          //        resizeTimer = new Timer();
-          //        resizeTimer.schedule(new TimerTask() {
-          //            private int resizeTimes = 0;
-
-          //            @Override
-          //            public void run() {
-          //                if (applet.getWidth() != mcApplet.getWidth() || applet.getHeight() != mcApplet.getHeight()) {
-          //                    resizeTimes = 10;
-          //                }
-          //                if (resizeTimes > 0) {
-          //                    resizeTimes--;
-          //                    mcApplet.resize(applet.getWidth(), applet.getHeight());
-          //                }
-          //            }
-          //        }, 100, 100);
-          //    }
-          //}
             else { // Launch main if not
+                window.setTask("Running main...");
+                window.release(); // Even though there's no applet, we gotta release it jic something is handling the release
+
                 Method method = klass.getMethod("main", String[].class);
                 method.invoke(null, new Object[] { this.loader.args });
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            window.crash(e);
         }
     }
 }

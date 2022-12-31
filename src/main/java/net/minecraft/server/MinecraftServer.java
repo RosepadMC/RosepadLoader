@@ -7,7 +7,7 @@ import java.io.File;
 
 public class MinecraftServer implements Runnable {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         new RosepadLoader().main(Environment.SERVER, args, new File(".").toPath());
     }
 
