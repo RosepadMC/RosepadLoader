@@ -2,6 +2,7 @@ package net.buj.loader;
 
 import net.buj.rml.Environment;
 import net.minecraft.client.MinecraftApplet;
+import org.lwjgl.Sys;
 
 import java.awt.*;
 import java.nio.file.Path;
@@ -43,7 +44,7 @@ public class RosepadLoader {
         }
         else throw new RuntimeException("Calling main multiple times");
 
-        if (applet == null) {
+        if (env == Environment.CLIENT && applet == null) {
             Frame frame = new LauncherWindow();
             frame.add((applet = new MinecraftApplet()));
             Stub stub = new Stub(applet);
@@ -51,6 +52,10 @@ public class RosepadLoader {
             stub.setParameter("sessionid", Objects.toString(arg(args, 1), ""));
             applet.setStub(new Stub(applet));
             frame.setVisible(true);
+            frame.setResizable(true);
+            frame.setMinimumSize(new Dimension(400, 300));
+            frame.setPreferredSize(new Dimension(400, 300));
+            frame.setName("Rosepad Loader Dev Build");
         }
 
         RosepadLoadingWindow loadingWindow = new RosepadLoadingWindow(applet);
