@@ -46,7 +46,7 @@ public class RosepadMainThread extends Thread {
     public void run() {
         GameJar jar;
         try {
-            jar = initJar(loader.environment, loader.home.resolve("versions/" + R.VERSION_NAME));
+            jar = initJar(loader.environment, loader.home.resolve("rosepad_versions/" + R.VERSION_NAME));
         } catch (IOException | URISyntaxException e) {
             window.crash(e);
             return;
