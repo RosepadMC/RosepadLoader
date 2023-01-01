@@ -12,9 +12,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Stub implements AppletStub {
-    private String username;
-    private Applet applet;
-    private Map<String, String> params = new HashMap<>();
+    private final Applet applet;
+    private final Map<String, String> params = new HashMap<>();
 
     public Stub(Applet applet) {
         this.applet = applet;
@@ -44,11 +43,11 @@ public class Stub implements AppletStub {
     }
 
     @Override
-    public String getParameter(String name) {
+    public synchronized String getParameter(String name) {
         return params.get(name);
     }
 
-    public void setParameter(String name, String param) {
+    public synchronized void setParameter(String name, String param) {
         params.put(name, param);
     }
 

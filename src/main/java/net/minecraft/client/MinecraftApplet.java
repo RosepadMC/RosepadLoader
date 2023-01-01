@@ -1,6 +1,7 @@
 package net.minecraft.client;
 
 import net.buj.loader.RosepadLoader;
+import net.buj.loader.Stub;
 import net.buj.rml.Environment;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.Display;
@@ -14,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MinecraftApplet extends Applet {
-    Applet wrapped = null;
 
     private String[] sanitize(String[] a) {
         List<String> l = new ArrayList<>();
@@ -22,11 +22,6 @@ public class MinecraftApplet extends Applet {
             if (s != null) l.add(s);
         }
         return l.toArray(new String[0]);
-    }
-
-    public void wrap(Applet applet) {
-        wrapped = applet;
-        add(wrapped);
     }
 
     public void init() {}

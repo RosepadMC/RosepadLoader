@@ -86,7 +86,7 @@ public class RosepadMainThread extends Thread {
 
                 // Do all the work that applet does, but with reflection!
                 boolean fullscreen = "true".equalsIgnoreCase(window.getParameter("fullscreen"));
-                @NotNull String username = window.getParameter("username", "Player");
+                @NotNull String username = window.getParameter("username", "RPlayer");
                 @NotNull String sessionID = window.getParameter("sessionid", "");
 
                 Canvas canvas; // Useless type definition!

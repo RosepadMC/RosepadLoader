@@ -29,6 +29,14 @@ public class RosepadLoader {
     }
 
     public void main(Environment env, String[] args, Path home) {
+        if (!dirtyOneMain) {
+            dirtyOneMain = true;
+        }
+        else {
+            System.err.println("Multiple calls to main");
+            return;
+        }
+
         ArgsParser parser = new ArgsParser(args);
 
         environment = env;
@@ -42,29 +50,14 @@ public class RosepadLoader {
             }
         }
 
-        if (!dirtyOneMain) {
-            dirtyOneMain = true;
-        }
-        else throw new RuntimeException("Calling main multiple times");
-
-        {
-            StringBuilder builder = new StringBuilder();
-            for (String arg : args) {
-                if (builder.length() > 0) {
-                    builder.append(", ");
-                }
-                builder.append(arg);
-            }
-            System.out.println(builder);
-        }
-
         if (env == Environment.CLIENT && applet == null) {
             Frame frame = new LauncherWindow();
             frame.add((applet = new MinecraftApplet()));
             Stub stub = new Stub(applet);
             stub.setParameter("username", parser.arg(0));
             stub.setParameter("sessionid", parser.arg(1));
-            applet.setStub(new Stub(applet));
+            applet.setStub(stub);
+            System.out.println(applet.getParameter("username"));
             frame.setVisible(true);
             frame.setResizable(true);
             frame.setMinimumSize(new Dimension(400, 300));
