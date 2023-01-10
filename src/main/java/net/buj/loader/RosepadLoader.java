@@ -11,7 +11,7 @@ import java.util.*;
 import java.util.List;
 
 public class RosepadLoader {
-    private static boolean dirtyOneMain = false;
+    public static boolean dirtyOneMain = false;
     private MinecraftApplet applet = null;
 
     public Environment environment;
