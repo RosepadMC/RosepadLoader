@@ -2,16 +2,14 @@ package net.buj.loader;
 
 import net.buj.rml.Environment;
 import net.minecraft.client.MinecraftApplet;
-import org.lwjgl.Sys;
 
 import java.awt.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
 import java.util.List;
 
 public class RosepadLoader {
-    public static boolean dirtyOneMain = false;
+    private static boolean dirtyOneMain = false;
     private MinecraftApplet applet = null;
 
     public Environment environment;

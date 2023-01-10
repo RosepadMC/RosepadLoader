@@ -26,22 +26,19 @@ public class MinecraftApplet extends Applet {
 
     public void init() {}
     public void start() {
-        if (!RosepadLoader.dirtyOneMain) {
-            throw new RuntimeException("MultiMC megahack");
+        try {
+            new RosepadLoader(this).main(
+                Environment.CLIENT,
+                sanitize(new String[]{
+                    getParameter("username"),
+                    getParameter("sessionid"),
+                    getParameter("server"),
+                    getParameter("port")
+                }),
+                Minecraft.getMinecraftDir().toPath()
+            );
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-      //try {
-      //    new RosepadLoader(this).main(
-      //        Environment.CLIENT,
-      //        sanitize(new String[]{
-      //            getParameter("username"),
-      //            getParameter("sessionid"),
-      //            getParameter("server"),
-      //            getParameter("port")
-      //        }),
-      //        Minecraft.getMinecraftDir().toPath()
-      //    );
-      //} catch (Exception e) {
-      //    throw new RuntimeException(e);
-      //}
     }
 }
