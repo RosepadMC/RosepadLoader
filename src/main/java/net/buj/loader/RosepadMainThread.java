@@ -2,11 +2,7 @@ package net.buj.loader;
 
 import net.buj.rml.Environment;
 import net.buj.rml.annotations.NotNull;
-import net.buj.rml.annotations.Nullable;
-import net.minecraft.client.MinecraftApplet;
-import org.lwjgl.Sys;
 
-import java.applet.Applet;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -18,16 +14,14 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
-import java.util.Objects;
-import java.util.Timer;
-import java.util.TimerTask;
 
-public class RosepadMainThread extends Thread {
+@SuppressWarnings("removal")
+public class RosepadMainThread {
     private @NotNull RosepadLoadingWindow window;
     private RosepadLoader loader;
 
     public RosepadMainThread(@NotNull RosepadLoadingWindow window, RosepadLoader loader) {
-        super("Rosepad main thread");
+        //super("Rosepad main thread");
 
         this.window = window;
         this.loader = loader;
@@ -42,7 +36,7 @@ public class RosepadMainThread extends Thread {
         return jar;
     }
 
-    @Override
+    //@Override
     public void run() {
         GameJar jar;
         try {
@@ -89,20 +83,25 @@ public class RosepadMainThread extends Thread {
                 @NotNull String username = window.getParameter("username", "RPlayer");
                 @NotNull String sessionID = window.getParameter("sessionid", "");
 
-                Canvas canvas; // Useless type definition!
+                Canvas canvas;
                 {
                     Class<?> klass2 = Class.forName("net.minecraft.src.CanvasMinecraftApplet", true, loader);
                     Constructor<?> constructor = klass2.getConstructor(Runnable.class);
                     canvas = (Canvas) constructor.newInstance((Object) null);
                 }
-                Runnable minecraft; // More useless type definitions!
+                Runnable minecraft;
                 {
                     Class<?> klass2 = loader.loadClass("net.minecraft.src.MinecraftAppletImpl");
-                    Constructor<?> constructor = klass2.getConstructor(Applet.class, Component.class, Canvas.class, Applet.class, int.class, int.class, boolean.class);
-                    minecraft = (Runnable) constructor.newInstance(
-                        window.applet, window.applet, canvas, window.applet,
-                        window.applet.getWidth(), window.applet.getHeight(),
-                        fullscreen);
+                    Constructor<?> constructor = klass2.getConstructor(java.applet.Applet.class,
+                                                                       Component.class,
+                                                                       Canvas.class,
+                                                                       java.applet.Applet.class,
+                                                                       int.class,
+                                                                       int.class,
+                                                                       boolean.class);
+                    minecraft = (Runnable) constructor.newInstance(window.applet, window.applet, canvas, window.applet,
+                                                                   window.applet.getWidth(), window.applet.getHeight(),
+                                                                   fullscreen);
                 }
                 canvas.getClass().getField("mc").set(canvas, minecraft);
                 {
@@ -120,7 +119,7 @@ public class RosepadMainThread extends Thread {
 
                 minecraft.getClass().getField("appletMode").set(minecraft, true);
 
-                Applet applet = window.release();
+                java.applet.Applet applet = window.release();
                 // Finally starting MC
                 applet.setLayout(new BorderLayout());
                 applet.add(canvas, "Center");

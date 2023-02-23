@@ -4,6 +4,11 @@ import net.buj.rml.Environment;
 import net.minecraft.client.MinecraftApplet;
 
 import java.awt.*;
+import java.io.File;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -26,6 +31,7 @@ public class RosepadLoader {
         this.applet = applet;
     }
 
+    @SuppressWarnings("deprecation")
     public void main(Environment env, String[] args, Path home) {
         if (!dirtyOneMain) {
             dirtyOneMain = true;
@@ -33,6 +39,25 @@ public class RosepadLoader {
         else {
             System.err.println("Multiple calls to main");
             return;
+        }
+
+        for (String arg : args) {
+            System.out.println(arg);
+        }
+
+        try {
+            Path logFile = home.resolve("logs/latest.log");
+            Files.deleteIfExists(logFile);
+            Files.createDirectories(logFile.getParent());
+            Files.createFile(logFile);
+            OutputStream fileStream = Files.newOutputStream(logFile);
+            OutputStream stdout = new MultiOutputStream(new OutputStream[] { fileStream, System.out });
+            OutputStream stderr = new MultiOutputStream(new OutputStream[] { fileStream, System.err });
+            System.setOut(new PrintStream(stdout));
+            System.setErr(new PrintStream(stderr));
+        } catch (Exception e) {
+            System.err.println("Failed to set logger");
+            e.printStackTrace();
         }
 
         ArgsParser parser = new ArgsParser(args);
@@ -49,8 +74,11 @@ public class RosepadLoader {
         }
 
         if (env == Environment.CLIENT && applet == null) {
-            Frame frame = new LauncherWindow();
-            frame.add((applet = new MinecraftApplet()));
+            applet = new MinecraftApplet();
+            Frame frame = new LauncherWindow(() -> {
+
+            });
+            frame.add(applet);
             Stub stub = new Stub(applet);
             stub.setParameter("username", parser.arg(0));
             stub.setParameter("sessionid", parser.arg(1));
@@ -66,7 +94,7 @@ public class RosepadLoader {
         RosepadLoadingWindow loadingWindow = new RosepadLoadingWindow(applet);
         new Thread(loadingWindow, "Rosepad loading window thread").start();
 
-        Thread thread = new RosepadMainThread(loadingWindow, this);
-        thread.start();
+        RosepadMainThread thread = new RosepadMainThread(loadingWindow, this);
+        thread.run();
     }
 }

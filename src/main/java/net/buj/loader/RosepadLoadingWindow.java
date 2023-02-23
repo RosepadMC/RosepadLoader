@@ -2,22 +2,24 @@ package net.buj.loader;
 
 import net.buj.rml.annotations.Nullable;
 
-import java.applet.Applet;
 import java.awt.*;
 import java.util.Objects;
 
 public class RosepadLoadingWindow implements Runnable {
-    public final @Nullable Applet applet;
+    @SuppressWarnings("removal")
+    public final @Nullable java.applet.Applet applet;
     public boolean doDraw = true;
     public @Nullable Exception error;
     private String task = null;
     private String step = null;
 
-    public RosepadLoadingWindow(Applet applet) {
+    @SuppressWarnings("removal")
+    public RosepadLoadingWindow(java.applet.Applet applet) {
         this.applet = applet;
     }
 
-    public synchronized Applet release() {
+    @SuppressWarnings("removal")
+    public synchronized java.applet.Applet release() {
         doDraw = false;
         return applet;
     }
@@ -33,9 +35,11 @@ public class RosepadLoadingWindow implements Runnable {
         step = name;
     }
 
+    @SuppressWarnings("deprecated")
     public String getParameter(String param) {
         return applet.getParameter(param);
     }
+    @SuppressWarnings("deprecated")
     public String getParameter(String param, String or) {
         return Objects.toString(applet.getParameter(param), or);
     }
