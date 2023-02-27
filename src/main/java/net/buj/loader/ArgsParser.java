@@ -41,4 +41,9 @@ public class ArgsParser {
     public List<String> param(String name) {
         return params.getOrDefault(name, Collections.emptyList());
     }
+    public String paramOr(String name, String defaultValue) {
+        List<String> param = this.param(name);
+        if (param.isEmpty()) return defaultValue;
+        return param.get(0);
+    }
 }

@@ -4,10 +4,8 @@ import net.buj.rml.Environment;
 import net.minecraft.client.MinecraftApplet;
 
 import java.awt.*;
-import java.io.File;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -75,15 +73,12 @@ public class RosepadLoader {
 
         if (env == Environment.CLIENT && applet == null) {
             applet = new MinecraftApplet();
-            Frame frame = new LauncherWindow(() -> {
-
-            });
+            Frame frame = new LauncherWindow(self -> self.dispose());
             frame.add(applet);
             Stub stub = new Stub(applet);
-            stub.setParameter("username", parser.arg(0));
-            stub.setParameter("sessionid", parser.arg(1));
+            stub.setParameter("username", parser.paramOr("username", parser.arg(0)));
+            stub.setParameter("sessionid", parser.paramOr("accessToken", parser.arg(0)));
             applet.setStub(stub);
-            System.out.println(applet.getParameter("username"));
             frame.setVisible(true);
             frame.setResizable(true);
             frame.setMinimumSize(new Dimension(400, 300));

@@ -5,14 +5,21 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
 public class LauncherWindow extends Frame implements WindowListener {
-    private final Runnable disposeFunc;
+    public interface DisposeFn {
+        void run(LauncherWindow win);
+    }
+    private DisposeFn disposeFunc;
 
-    public LauncherWindow(Runnable disposeFunc) {
+    public LauncherWindow(DisposeFn disposeFunc) {
         super();
 
         this.disposeFunc = disposeFunc;
 
         addWindowListener(this);
+    }
+
+    public void setOnDispose(DisposeFn newFunc) {
+        disposeFunc = newFunc;
     }
 
     @Override
@@ -23,7 +30,7 @@ public class LauncherWindow extends Frame implements WindowListener {
     @Override
     public void windowClosing(WindowEvent e) {
         try {
-            disposeFunc.run();
+            disposeFunc.run(this);
         } catch (Exception err) {
             err.printStackTrace();
         }
