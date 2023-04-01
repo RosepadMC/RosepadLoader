@@ -68,13 +68,13 @@ processResources {
 }
 
 task client(type: Jar, dependsOn: shadowJar) {
-    archiveName = "clientLoader.jar"
+    archiveFileName = "clientLoader.jar"
     exclude "server*"
     from zipTree(shadowJar.archiveFile)
 }
 
 task server(type: Jar, dependsOn: shadowJar) {
-    archiveName = "serverLoader.jar"
+    archiveFileName = "serverLoader.jar"
     manifest {
         attributes 'Main-Class': 'net.minecraft.server.MinecraftServer'
     }
