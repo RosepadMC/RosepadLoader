@@ -34,8 +34,8 @@ dependencies {
     implementation project(":rml")
     implementation 'net.fabricmc:tiny-remapper:0.8.6'
 
-    implementation files('../libs/lwjgl-2.9.1-nightly-20130708.jar')
-    implementation files('../libs/lwjgl_util-2.9.1-nightly-20130708.jar')
+    shadow files('../libs/lwjgl-2.9.1-nightly-20130708.jar')
+    shadow files('../libs/lwjgl_util-2.9.1-nightly-20130708.jar')
 
     annotationProcessor implementation ("org.ow2.asm:asm:${asm_version}")
     annotationProcessor implementation ("org.ow2.asm:asm-analysis:${asm_version}")
