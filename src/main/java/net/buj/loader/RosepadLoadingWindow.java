@@ -14,7 +14,7 @@ public class RosepadLoadingWindow implements Runnable {
     private String step = null;
 
     @SuppressWarnings("removal")
-    public RosepadLoadingWindow(java.applet.Applet applet) {
+    public RosepadLoadingWindow(@Nullable java.applet.Applet applet) {
         this.applet = applet;
     }
 
@@ -28,10 +28,12 @@ public class RosepadLoadingWindow implements Runnable {
         error = e;
     }
     public synchronized void setTask(String name) {
+        if (applet == null) System.out.println("[TASK] " + name);
         task = name;
         step = null;
     }
     public synchronized void setStep(String name) {
+        if (applet == null) System.out.println("[STEP] " + name);
         step = name;
     }
 
