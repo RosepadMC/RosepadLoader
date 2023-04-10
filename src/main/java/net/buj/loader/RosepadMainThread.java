@@ -1,6 +1,8 @@
 package net.buj.loader;
 
 import net.buj.rml.Environment;
+import net.buj.rml.Game;
+import net.buj.rml.RosepadModLoader;
 import net.buj.rml.annotations.NotNull;
 
 import java.awt.*;
@@ -13,6 +15,7 @@ import java.lang.reflect.Modifier;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 @SuppressWarnings("removal")
@@ -48,13 +51,24 @@ public class RosepadMainThread extends Thread {
 
         //new CheckLWJGL(window, loader.home).run();
 
+        window.setTask("Loading mods...");
+        {
+            try {
+                Files.createDirectories(loader.home.resolve("mods"));
+            } catch (Exception error) {
+                error.printStackTrace();
+            }
+            Game.modLoader = new RosepadModLoader();
+            Game.modLoader.load(Environment.CLIENT, loader.home.resolve("mods").toAbsolutePath().toFile());
+        }
+
         // TODO: Mixins
 
         window.setTask("Starting game...");
 
         URLClassLoader loader;
         try {
-            loader = new URLClassLoader(new URL[]{ jar.getURL() }, null);
+            loader = new MinecraftIsoLoader(new URL[]{ jar.getURL() }, getClass().getClassLoader());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
