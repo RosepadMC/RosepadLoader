@@ -28,12 +28,12 @@ public class RosepadLoadingWindow implements Runnable {
         error = e;
     }
     public synchronized void setTask(String name) {
-        if (applet == null) System.out.println("[TASK] " + name);
+        System.out.println(name);
         task = name;
         step = null;
     }
     public synchronized void setStep(String name) {
-        if (applet == null) System.out.println("[STEP] " + name);
+        if (name != null) System.out.println(task + " / " + name);
         step = name;
     }
 

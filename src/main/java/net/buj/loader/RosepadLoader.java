@@ -89,9 +89,7 @@ public class RosepadLoader {
         RosepadLoadingWindow loadingWindow = new RosepadLoadingWindow(applet);
         new Thread(loadingWindow, "Rosepad loading window thread").start();
 
-        new CheckLWJGL(loadingWindow, home).run();
-
         RosepadMainThread thread = new RosepadMainThread(loadingWindow, this);
-        thread.run();
+        thread.start();
     }
 }

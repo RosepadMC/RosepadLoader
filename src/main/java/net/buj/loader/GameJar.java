@@ -83,8 +83,6 @@ public class GameJar {
                 StandardCopyOption.REPLACE_EXISTING
             );
 
-        System.out.println("Patching jar...");
-
         if (window != null)
             window.setTask("Patching jar...");
 

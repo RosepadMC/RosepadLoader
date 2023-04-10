@@ -16,12 +16,12 @@ import java.net.URLClassLoader;
 import java.nio.file.Path;
 
 @SuppressWarnings("removal")
-public class RosepadMainThread {
+public class RosepadMainThread extends Thread {
     private @NotNull RosepadLoadingWindow window;
     private RosepadLoader loader;
 
     public RosepadMainThread(@NotNull RosepadLoadingWindow window, RosepadLoader loader) {
-        //super("Rosepad main thread");
+        super("Rosepad main thread");
 
         this.window = window;
         this.loader = loader;
@@ -36,7 +36,7 @@ public class RosepadMainThread {
         return jar;
     }
 
-    //@Override
+    @Override
     public void run() {
         GameJar jar;
         try {
@@ -45,6 +45,8 @@ public class RosepadMainThread {
             window.crash(e);
             return;
         }
+
+        new CheckLWJGL(window, loader.home).run();
 
         // TODO: Mixins
 
