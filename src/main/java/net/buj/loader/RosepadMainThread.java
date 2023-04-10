@@ -46,7 +46,7 @@ public class RosepadMainThread extends Thread {
             return;
         }
 
-        new CheckLWJGL(window, loader.home).run();
+        //new CheckLWJGL(window, loader.home).run();
 
         // TODO: Mixins
 
