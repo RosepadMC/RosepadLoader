@@ -4,6 +4,7 @@ import net.buj.rml.Environment;
 import net.buj.rml.Game;
 import net.buj.rml.RosepadModLoader;
 import net.buj.rml.annotations.NotNull;
+import net.buj.rml.events.EventLoop;
 
 import java.awt.*;
 import java.io.File;
@@ -49,9 +50,8 @@ public class RosepadMainThread extends Thread {
             return;
         }
 
-        //new CheckLWJGL(window, loader.home).run();
-
         window.setTask("Loading mods...");
+        Game.eventLoop = new EventLoop();
         {
             try {
                 Files.createDirectories(loader.home.resolve("mods"));
