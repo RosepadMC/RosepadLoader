@@ -86,6 +86,8 @@ public class RosepadLoader {
             frame.setName("Rosepad Loader Dev Build");
         }
 
+        System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
+
         RosepadLoadingWindow loadingWindow = new RosepadLoadingWindow(applet);
         new Thread(loadingWindow, "Rosepad loading window thread").start();
 
