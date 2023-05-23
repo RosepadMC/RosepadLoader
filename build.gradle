@@ -34,8 +34,8 @@ dependencies {
     implementation project(":rml")
     implementation 'net.fabricmc:tiny-remapper:0.8.6'
 
-    shadow files('../libs/lwjgl-2.9.1-nightly-20130708.jar')
-    shadow files('../libs/lwjgl_util-2.9.1-nightly-20130708.jar')
+    shadow files('../libs/lwjgl.jar')
+    shadow files('../libs/lwjgl_util.jar')
 
     annotationProcessor implementation ("org.ow2.asm:asm:${asm_version}")
     annotationProcessor implementation ("org.ow2.asm:asm-analysis:${asm_version}")
@@ -131,16 +131,35 @@ FileCollection getLilypadClasspath(FileCollection originalCollection, String lib
     return files(finalList)
 }
 
-static List<String> getRunJVMArgs(String allocatedMemory, java.nio.file.Path libDir) {
+static List<String> getRunJVMArgs(String allocatedMemory, java.nio.file.Path libDir, java.nio.file.Path runHome) {
     List<String> jvmArgs = new ArrayList<String>()
     jvmArgs.add("-Xmx" + allocatedMemory)
     jvmArgs.add("-Xms" + allocatedMemory)
     jvmArgs.add("-Djava.util.Arrays.useLegacyMergeSort=true")
     jvmArgs.add("-Djava.library.path=" + libDir)
+    jvmArgs.add("-Duser.home=" + runHome)
+    java.nio.file.Files.createDirectories(runHome);
     return jvmArgs
 }
 
+task runServer(type: JavaExec, dependsOn: client) {
+    dependsOn "server"
+
+    mainClass = "net.minecraft.server.MinecraftServer"
+    argsString = "nogui"
+    classpath = getLilypadClasspath(
+        sourceSets.main.runtimeClasspath,
+        rootProject.projectDir.toPath().resolve("libs").toString(),
+        shadowJar.destinationDirectory.file("serverLoader.jar").toString()
+    )
+    environment("HOME", rootProject.projectDir.toPath().resolve("run/server"))
+    workingDir(rootProject.projectDir.toPath().resolve("run/server"))
+    jvmArgs = getRunJVMArgs("1024M", rootProject.projectDir.toPath().resolve("libs/natives"), rootProject.projectDir.toPath().resolve("run/server"))
+}
+
 task runClient(type: JavaExec, dependsOn: client) {
+    dependsOn "client"
+
     mainClass = "net.minecraft.client.Minecraft"
     argsString = "Player"
     classpath = getLilypadClasspath(
@@ -148,7 +167,7 @@ task runClient(type: JavaExec, dependsOn: client) {
         rootProject.projectDir.toPath().resolve("libs").toString(),
         shadowJar.destinationDirectory.file("clientLoader.jar").toString()
     )
-    //environment("HOME", "${projectDir}/run")
-    //workingDir("${projectDir}/run")
-    jvmArgs = getRunJVMArgs("1024M", rootProject.projectDir.toPath().resolve("libs/natives"))
+    environment("HOME", rootProject.projectDir.toPath().resolve("run/client"))
+    workingDir(rootProject.projectDir.toPath().resolve("run/client"))
+    jvmArgs = getRunJVMArgs("1024M", rootProject.projectDir.toPath().resolve("libs/natives"), rootProject.projectDir.toPath().resolve("run/client"))
 }
