@@ -39,10 +39,6 @@ public class RosepadLoader {
             return;
         }
 
-        for (String arg : args) {
-            System.out.println(arg);
-        }
-
         try {
             Path logFile = home.resolve("logs/latest.log");
             Files.deleteIfExists(logFile);
@@ -73,7 +69,7 @@ public class RosepadLoader {
 
         if (env == Environment.CLIENT && applet == null) {
             applet = new MinecraftApplet();
-            Frame frame = new LauncherWindow(self -> self.dispose());
+            Frame frame = new LauncherWindow(Window::dispose);
             frame.add(applet);
             Stub stub = new Stub(applet);
             stub.setParameter("username", parser.paramOr("username", parser.arg(0)));

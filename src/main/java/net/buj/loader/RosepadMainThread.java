@@ -2,7 +2,8 @@ package net.buj.loader;
 
 import net.buj.rml.Environment;
 import net.buj.rml.Game;
-import net.buj.rml.RosepadModLoader;
+import net.buj.rml.loader.GameJar;
+import net.buj.rml.loader.RosepadModLoader;
 import net.buj.rml.annotations.NotNull;
 import net.buj.rml.events.EventLoop;
 
@@ -15,14 +16,13 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 @SuppressWarnings("removal")
 public class RosepadMainThread extends Thread {
-    private @NotNull RosepadLoadingWindow window;
-    private RosepadLoader loader;
+    private final @NotNull RosepadLoadingWindow window;
+    private final RosepadLoader loader;
 
     public RosepadMainThread(@NotNull RosepadLoadingWindow window, RosepadLoader loader) {
         super("Rosepad main thread");
@@ -32,12 +32,12 @@ public class RosepadMainThread extends Thread {
     }
 
     private GameJar initJar(Environment env, Path versionHome) throws IOException, URISyntaxException {
-        GameJar jar = new GameJar(env, versionHome);
+        net.buj.loader.GameJar jar = new net.buj.loader.GameJar(env, versionHome);
         jar.window = window;
 
         jar.fetch();
 
-        return jar;
+        return jar.intoRMLGameJar();
     }
 
     @Override
@@ -51,30 +51,40 @@ public class RosepadMainThread extends Thread {
         }
 
         window.setTask("Loading mods...");
-        Game.eventLoop = new EventLoop();
+        Game.EVENT_LOOP = new EventLoop();
         {
             try {
                 Files.createDirectories(loader.home.resolve("mods"));
             } catch (Exception error) {
                 error.printStackTrace();
             }
-            Game.modLoader = new RosepadModLoader();
-            Game.modLoader.load(Environment.CLIENT, loader.home.resolve("mods").toAbsolutePath().toFile());
+            Game.MOD_LOADER = new RosepadModLoader();
+            try {
+                Game.MOD_LOADER.load(
+                    Environment.CLIENT,
+                    loader.home.resolve("mods").toAbsolutePath().toFile(),
+                    jar
+                );
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
 
         // TODO: Mixins
 
         window.setTask("Starting game...");
 
-        URLClassLoader loader;
+        MinecraftIsoLoader minecraftLoader;
         try {
-            loader = new MinecraftIsoLoader(new URL[]{ jar.getURL() }, getClass().getClassLoader());
+            minecraftLoader = new MinecraftIsoLoader(new URL[]{ jar.getURL() }, getClass().getClassLoader());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
+        Game.MOD_LOADER.setMinecraftClassLoader(minecraftLoader);
+
         try {
-            Class<?> klass = loader.loadClass(
+            Class<?> klass = minecraftLoader.loadClass(
                 this.loader.environment == Environment.CLIENT
                     ? "net.minecraft.client.Minecraft"
                     : "net.minecraft.server.MinecraftServer"
@@ -101,13 +111,13 @@ public class RosepadMainThread extends Thread {
 
                 Canvas canvas;
                 {
-                    Class<?> klass2 = Class.forName("net.minecraft.src.CanvasMinecraftApplet", true, loader);
+                    Class<?> klass2 = Class.forName("net.minecraft.src.CanvasMinecraftApplet", true, minecraftLoader);
                     Constructor<?> constructor = klass2.getConstructor(Runnable.class);
                     canvas = (Canvas) constructor.newInstance((Object) null);
                 }
                 Runnable minecraft;
                 {
-                    Class<?> klass2 = loader.loadClass("net.minecraft.src.MinecraftAppletImpl");
+                    Class<?> klass2 = minecraftLoader.loadClass("net.minecraft.src.MinecraftAppletImpl");
                     Constructor<?> constructor = klass2.getConstructor(java.applet.Applet.class,
                                                                        Component.class,
                                                                        Canvas.class,
@@ -121,7 +131,7 @@ public class RosepadMainThread extends Thread {
                 }
                 canvas.getClass().getField("mc").set(canvas, minecraft);
                 {
-                    Class<?> klass2 = loader.loadClass("net.minecraft.src.Session");
+                    Class<?> klass2 = minecraftLoader.loadClass("net.minecraft.src.Session");
                     Object session = klass2.getConstructor(String.class, String.class).newInstance(username, sessionID);
                     minecraft.getClass().getField("session").set(minecraft, session);
                 }

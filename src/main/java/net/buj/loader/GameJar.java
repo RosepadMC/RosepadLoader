@@ -1,6 +1,7 @@
 package net.buj.loader;
 
 import net.buj.rml.Environment;
+import net.buj.rml.annotations.Nullable;
 
 import java.io.*;
 import java.net.*;
@@ -12,6 +13,7 @@ public class GameJar {
     private final Environment environment;
     private final Path home;
     public RosepadLoadingWindow window;
+    private @Nullable Path minecraftPath = null;
 
     public GameJar(Environment env, Path home) throws IOException {
         environment = env;
@@ -48,6 +50,8 @@ public class GameJar {
 
         if (window != null)
             window.setTask("Downloading original jar...");
+
+        minecraftPath = home.resolve("minecraft.jar");
 
         Path orig = home.resolve(".orig-mc.jar");
         Path resulting = home.resolve("minecraft.jar");
@@ -90,11 +94,14 @@ public class GameJar {
         byte[] patchedBytes = BadBinDiff.diff(bytes, patch);
 
         Files.write(resulting, patchedBytes);
-        Files.write(hashPath, ("" + Arrays.hashCode(patch)).getBytes());
+        Files.write(hashPath, String.valueOf(Arrays.hashCode(patch)).getBytes());
     }
 
     public URL getURL() throws MalformedURLException {
-        Path deobfuscated = home.resolve("minecraft.jar");
-        return deobfuscated.toUri().toURL();
+        return minecraftPath.toUri().toURL();
+    }
+
+    public net.buj.rml.loader.GameJar intoRMLGameJar() {
+        return new net.buj.rml.loader.GameJar(minecraftPath);
     }
 }
