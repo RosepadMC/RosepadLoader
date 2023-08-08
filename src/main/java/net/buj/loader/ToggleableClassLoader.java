@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
-import java.util.Objects;
 import java.util.Vector;
 
 public class ToggleableClassLoader extends ClassLoader {

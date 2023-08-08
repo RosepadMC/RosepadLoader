@@ -1,25 +1,14 @@
 package net.buj.loader;
 
-import net.buj.rml.Environment;
-import net.buj.rml.Game;
-import net.buj.rml.loader.GameJar;
-import net.buj.rml.loader.RosepadModLoader;
+import net.buj.loader.tasks.CreateGameJarTask;
+import net.buj.loader.tasks.DownloadOriginalJarTask;
+import net.buj.loader.tasks.LaunchGameTask;
+import net.buj.loader.tasks.PreloadModsTask;
 import net.buj.rml.annotations.NotNull;
-import net.buj.rml.events.EventLoop;
 
-import java.awt.*;
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-@SuppressWarnings("removal")
 public class RosepadMainThread extends Thread {
     private final @NotNull RosepadLoadingWindow window;
     private final RosepadLoader loader;
@@ -31,6 +20,7 @@ public class RosepadMainThread extends Thread {
         this.loader = loader;
     }
 
+    /*
     private GameJar initJar(Environment env, Path versionHome) throws IOException, URISyntaxException {
         net.buj.loader.GameJar jar = new net.buj.loader.GameJar(env, versionHome);
         jar.window = window;
@@ -161,6 +151,27 @@ public class RosepadMainThread extends Thread {
             }
         } catch (Exception e) {
             window.crash(e);
+        }
+    }*/
+
+    @Override
+    public void run() {
+        try {
+            final Path versionPath = this.loader.home.resolve("rosepad_versions/" + R.VERSION_NAME);
+            final Path modsPath = this.loader.home.resolve("mods");
+
+            Files.createDirectories(versionPath);
+
+            DownloadOriginalJarTask downloadJarTask = new DownloadOriginalJarTask(this.loader.environment, versionPath);
+            CreateGameJarTask gameJarTask = new CreateGameJarTask(downloadJarTask, this.loader.environment, versionPath);
+            PreloadModsTask preloadModsTask = new PreloadModsTask(gameJarTask, this.loader.environment, modsPath);
+            LaunchGameTask launchGameTask = new LaunchGameTask(preloadModsTask, this.loader.environment, this.loader.home, this.loader.args);
+
+            launchGameTask.await(this.window);
+        } catch (Failible.NoPropagate e) {
+            this.window.crash(e.exception());
+        } catch (Exception e) {
+            this.window.crash(e);
         }
     }
 }

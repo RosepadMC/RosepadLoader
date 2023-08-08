@@ -9,7 +9,6 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 public class RosepadLoader {
     private static boolean dirtyOneMain = false;
@@ -54,16 +53,21 @@ public class RosepadLoader {
             e.printStackTrace();
         }
 
-        ArgsParser parser = new ArgsParser(args);
+        ArgsParser parser = (new ArgsParser.Builder())
+            .param("gameDir", true)
+            .param("assetsDir", true)
+            .param("username", true)
+            .param("accessToken", true)
+            .build(args);
 
         environment = env;
         this.args = args;
         this.home = home;
 
         {
-            List<String> l = parser.param("gameDir");
-            if (!l.isEmpty()) {
-                this.home = Paths.get(l.get(0));
+            String homePath = parser.arg("gameDir");
+            if (homePath != null) {
+                this.home = Paths.get(home.toUri());
             }
         }
 
@@ -72,8 +76,8 @@ public class RosepadLoader {
             Frame frame = new LauncherWindow(Window::dispose);
             frame.add(applet);
             Stub stub = new Stub(applet);
-            stub.setParameter("username", parser.paramOr("username", parser.arg(0)));
-            stub.setParameter("sessionid", parser.paramOr("accessToken", parser.arg(0)));
+            stub.setParameter("username", parser.or("username", parser.arg(0)));
+            stub.setParameter("sessionid", parser.or("accessToken", parser.arg(0)));
             applet.setStub(stub);
             frame.setVisible(true);
             frame.setResizable(true);

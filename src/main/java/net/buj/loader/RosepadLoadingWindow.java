@@ -12,6 +12,11 @@ public class RosepadLoadingWindow implements Runnable {
     public @Nullable Exception error;
     private String task = null;
     private String step = null;
+    private int progress = 0;
+    private @Nullable Integer max = null;
+    private boolean shouldRedraw = true;
+    private int previousWidth = 0;
+    private int previousHeight = 0;
 
     @SuppressWarnings("removal")
     public RosepadLoadingWindow(@Nullable java.applet.Applet applet) {
@@ -25,16 +30,33 @@ public class RosepadLoadingWindow implements Runnable {
     }
 
     public synchronized void crash(Exception e) {
+        e.printStackTrace();
+        shouldRedraw = true;
         error = e;
+        this.progress = 0;
+        this.max = null;
     }
     public synchronized void setTask(String name) {
         System.out.println(name);
+        shouldRedraw = true;
         task = name;
         step = null;
+        this.progress = 0;
+        this.max = null;
     }
     public synchronized void setStep(String name) {
         if (name != null) System.out.println(task + " / " + name);
+        shouldRedraw = true;
         step = name;
+        this.progress = 0;
+        this.max = null;
+    }
+    public synchronized void setStep(String name, int progress, int max) {
+        if (name != null) System.out.println(task + " / " + name + "[" + progress + "/" + max + "]");
+        shouldRedraw = true;
+        step = name;
+        this.progress = progress;
+        this.max = max;
     }
 
     @SuppressWarnings("deprecated")
@@ -44,6 +66,21 @@ public class RosepadLoadingWindow implements Runnable {
     @SuppressWarnings("deprecated")
     public String getParameter(String param, String or) {
         return Objects.toString(applet.getParameter(param), or);
+    }
+
+    private synchronized boolean shouldRedraw() {
+        if (applet == null) return false;
+
+        boolean shouldRedraw = this.shouldRedraw;
+
+        if (previousWidth != applet.getWidth() || previousHeight != applet.getHeight()) {
+            shouldRedraw = true;
+            previousWidth = applet.getWidth();
+            previousHeight = applet.getHeight();
+        }
+
+        this.shouldRedraw = false;
+        return shouldRedraw;
     }
 
     public synchronized void draw() {
@@ -62,7 +99,7 @@ public class RosepadLoadingWindow implements Runnable {
             if (task != null)
                 graphics.drawString(task, 10, 25);
             if (step != null)
-                graphics.drawString(step, 10, 40);
+                graphics.drawString(step + (max == null ? "" : " [" + progress + "/" + max + "]"), 10, 40);
         }
         else {
             graphics.drawString("An error occured while loading Rosepad:", 10, 10);
@@ -87,7 +124,7 @@ public class RosepadLoadingWindow implements Runnable {
     public void run() {
         if (applet == null) return;
         while (doDraw) {
-            draw();
+            if (shouldRedraw()) draw();
             try {
                 Thread.sleep(1000/20);
             } catch (InterruptedException ignored) {}

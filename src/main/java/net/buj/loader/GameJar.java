@@ -8,6 +8,7 @@ import java.net.*;
 import java.nio.file.*;
 import java.util.*;
 
+@Deprecated
 public class GameJar {
 
     private final Environment environment;

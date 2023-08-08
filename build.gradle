@@ -1,4 +1,8 @@
 import java.nio.file.Files
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 plugins {
     id 'java'
@@ -19,7 +23,14 @@ static byte[] diff(byte[] src, byte[] target) {
         bytes[i] = (byte) (a ^ b);
     }
 
-    return bytes;
+    try (ByteArrayOutputStream byteStream = new ByteArrayOutputStream(bytes.length);
+         GZIPOutputStream compression = new GZIPOutputStream(byteStream)) {
+        compression.write(bytes);
+        compression.close();
+        return byteStream.toByteArray();
+    } catch (Exception e) {
+        throw new RuntimeException(e);
+    }
 }
 
 repositories {
