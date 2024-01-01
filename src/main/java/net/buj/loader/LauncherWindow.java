@@ -34,6 +34,8 @@ public class LauncherWindow extends Frame implements WindowListener {
         } catch (Exception err) {
             err.printStackTrace();
         }
+
+        System.exit(0); // Stolen from OneSix
     }
 
     @Override
